@@ -1,0 +1,55 @@
+PODS:
+  - Flutter (1.0.0)
+  - shared_preferences_ios (0.0.1):
+    - Flutter
+  - Starscream (3.1.1)
+  - wallet_connect_v2 (0.0.1):
+    - Flutter
+    - Starscream (= 3.1.1)
+    - WalletConnectSwiftV2 (= 1.1.0)
+  - WalletConnectSwiftV2 (1.1.0):
+    - WalletConnectSwiftV2/WalletConnect (= 1.1.0)
+  - WalletConnectSwiftV2/Commons (1.1.0)
+  - WalletConnectSwiftV2/JSONRPC (1.1.0):
+    - WalletConnectSwiftV2/Commons
+  - WalletConnectSwiftV2/WalletConnect (1.1.0):
+    - WalletConnectSwiftV2/WalletConnectPairing
+  - WalletConnectSwiftV2/WalletConnectKMS (1.1.0):
+    - WalletConnectSwiftV2/WalletConnectUtils
+  - WalletConnectSwiftV2/WalletConnectNetworking (1.1.0):
+    - WalletConnectSwiftV2/WalletConnectRelay
+  - WalletConnectSwiftV2/WalletConnectPairing (1.1.0):
+    - WalletConnectSwiftV2/WalletConnectNetworking
+  - WalletConnectSwiftV2/WalletConnectRelay (1.1.0):
+    - WalletConnectSwiftV2/WalletConnectKMS
+  - WalletConnectSwiftV2/WalletConnectUtils (1.1.0):
+    - WalletConnectSwiftV2/JSONRPC
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
+  - wallet_connect_v2 (from `.symlinks/plugins/wallet_connect_v2/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Starscream
+    - WalletConnectSwiftV2
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  shared_preferences_ios:
+    :path: ".symlinks/plugins/shared_preferences_ios/ios"
+  wallet_connect_v2:
+    :path: ".symlinks/plugins/wallet_connect_v2/ios"
+
+SPEC CHECKSUMS:
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
+  wallet_connect_v2: 0a3b68bf8b2735a76631c76a1eaf5b360e81dad3
+  WalletConnectSwiftV2: 2a1098c28f083a5084979222ba6d62c29f870e31
+
+PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
+
+COCOAPODS: 1.11.3
