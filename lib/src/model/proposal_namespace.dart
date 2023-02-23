@@ -15,7 +15,7 @@ class ProposalNamespace {
       {required this.chains,
       required this.methods,
       required this.events,
-      required this.extensions});
+      this.extensions});
 
   factory ProposalNamespace.fromJson(Map<String, dynamic> json) =>
       _$ProposalNamespaceFromJson(json);

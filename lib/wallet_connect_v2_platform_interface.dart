@@ -1,6 +1,8 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'src/model/app_metadata.dart';
+import 'src/model/proposal_namespace.dart';
+import 'src/model/request.dart';
 import 'src/model/session.dart';
 import 'src/model/session_approval.dart';
 import 'wallet_connect_v2_method_channel.dart';
@@ -78,5 +80,14 @@ abstract class WalletConnectV2Platform extends PlatformInterface {
 
   Future<void> updateSession({required SessionApproval updateApproval}) {
     throw UnimplementedError('updateSession() has not been implemented.');
+  }
+
+  Future<String?> createPair(
+      {required Map<String, ProposalNamespace> namespaces}) {
+    throw UnimplementedError('createPair() has not been implemented.');
+  }
+
+  Future<void> sendRequest({required Request request}) {
+    throw UnimplementedError('sendRequest() has not been implemented.');
   }
 }

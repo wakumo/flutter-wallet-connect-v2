@@ -4,20 +4,27 @@ import 'package:flutter/services.dart';
 
 import 'src/model/app_metadata.dart';
 import 'src/model/connection_status.dart';
+import 'src/model/proposal_namespace.dart';
+import 'src/model/request.dart';
 import 'src/model/session.dart';
 import 'src/model/session_approval.dart';
 import 'src/model/session_delete.dart';
 import 'src/model/session_proposal.dart';
+import 'src/model/session_rejection.dart';
 import 'src/model/session_request.dart';
+import 'src/model/session_response.dart';
 import 'src/model/session_update.dart';
 import 'wallet_connect_v2_platform_interface.dart';
 
 export 'src/model/app_metadata.dart';
+export 'src/model/proposal_namespace.dart';
+export 'src/model/request.dart';
 export 'src/model/session.dart';
 export 'src/model/session_approval.dart';
 export 'src/model/session_namespace.dart';
 export 'src/model/session_proposal.dart';
 export 'src/model/session_request.dart';
+export 'src/model/session_response.dart';
 
 class WalletConnectV2 {
   StreamSubscription? _eventSubscription;
@@ -29,6 +36,12 @@ class WalletConnectV2 {
   OnSessionDelete? onSessionDelete;
   OnSessionRequest? onSessionRequest;
   OnEventError? onEventError;
+
+  /// DAPP only, listen to action of reject proposal from wallet
+  OnSessionRejection? onSessionRejection;
+
+  /// DAPP only, listen to action of approve/reject request from wallet
+  OnSessionResponse? onSessionResponse;
 
   Future<void> init(
       {required String projectId, required AppMetadata appMetadata}) {
@@ -46,6 +59,10 @@ class WalletConnectV2 {
         onSessionUpdate?.call(event.topic);
       } else if (event is SessionDelete) {
         onSessionDelete?.call(event.topic);
+      } else if (event is SessionRejection) {
+        onSessionRejection?.call(event.topic);
+      } else if (event is SessionResponse) {
+        onSessionResponse?.call(event);
       }
     }, onError: (error) {
       if (error is PlatformException) {
@@ -105,6 +122,17 @@ class WalletConnectV2 {
         .rejectRequest(topic: topic, requestId: requestId);
   }
 
+  /// DAPP only, to create PAIR URI to pair with wallet
+  Future<String?> createPair(
+      {required Map<String, ProposalNamespace> namespaces}) {
+    return WalletConnectV2Platform.instance.createPair(namespaces: namespaces);
+  }
+
+  /// DAPP only, to send request to wallet
+  Future<void> sendRequest({required Request request}) {
+    return WalletConnectV2Platform.instance.sendRequest(request: request);
+  }
+
   Future dispose() async {
     _eventSubscription?.cancel();
     _eventSubscription = null;
@@ -116,5 +144,7 @@ typedef OnSessionProposal = Function(SessionProposal proposal);
 typedef OnSessionSettle = Function(Session session);
 typedef OnSessionUpdate = Function(String topic);
 typedef OnSessionDelete = Function(String topic);
+typedef OnSessionRejection = Function(String topic);
+typedef OnSessionResponse = Function(SessionResponse response);
 typedef OnSessionRequest = Function(SessionRequest request);
 typedef OnEventError = Function(String code, String message);

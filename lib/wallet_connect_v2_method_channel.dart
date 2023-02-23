@@ -5,11 +5,15 @@ import 'package:flutter/services.dart';
 
 import 'src/model/app_metadata.dart';
 import 'src/model/connection_status.dart';
+import 'src/model/proposal_namespace.dart';
+import 'src/model/request.dart';
 import 'src/model/session.dart';
 import 'src/model/session_approval.dart';
 import 'src/model/session_delete.dart';
 import 'src/model/session_proposal.dart';
+import 'src/model/session_rejection.dart';
 import 'src/model/session_request.dart';
+import 'src/model/session_response.dart';
 import 'src/model/session_update.dart';
 import 'wallet_connect_v2_platform_interface.dart';
 
@@ -90,6 +94,18 @@ class MethodChannelWalletConnectV2 extends WalletConnectV2Platform {
   }
 
   @override
+  Future<String?> createPair(
+      {required Map<String, ProposalNamespace> namespaces}) {
+    return methodChannel.invokeMethod<String>('createPair',
+        namespaces.map((key, value) => MapEntry(key, value.toJson())));
+  }
+
+  @override
+  Future<void> sendRequest({required Request request}) {
+    return methodChannel.invokeMethod('sendRequest', request.toJson());
+  }
+
+  @override
   Stream<dynamic> get onEvent {
     _onEvent ??=
         eventChannel.receiveBroadcastStream().distinct().map((dynamic event) {
@@ -110,6 +126,10 @@ class MethodChannelWalletConnectV2 extends WalletConnectV2Platform {
           return SessionUpdate.fromJson(eventData);
         case "session_delete":
           return SessionDelete.fromJson(eventData);
+        case "session_rejection":
+          return SessionRejection.fromJson(eventData);
+        case "session_response":
+          return SessionResponse.fromJson(eventData);
         default:
           break;
       }

@@ -83,6 +83,18 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                         .sink { [weak self] request in
                             self?.onEvent(name: "session_request", data: request.toFlutterValue())
                         }.store(in: &publishers)
+            
+                Sign.instance.sessionResponsePublisher
+                        .receive(on: DispatchQueue.main)
+                        .sink { [weak self] response in
+                            self?.onEvent(name: "session_response", data: response.toFlutterValue())
+                        }.store(in: &publishers)
+            
+                Sign.instance.sessionRejectionPublisher
+                        .receive(on: DispatchQueue.main)
+                        .sink { [weak self] rejection in
+                            self?.onEvent(name: "session_rejection", data: toRejectionValue(rejection: rejection))
+                        }.store(in: &publishers)
 
             result(nil)
         }
@@ -209,6 +221,43 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                 result(nil)
             }
         }
+        case "createPair": do {
+            Task {
+                do {
+                    let arguments = call.arguments as! [String: [String: Any]]
+                    let namespaces = arguments.mapValues { value in
+                        let chains = (value["chains"] as! Array).map { chain in
+                            Blockchain(chain)!
+                        }
+                        let methods = Set(value["methods"] as! [String])
+                        let events = Set(value["events"] as! [String])
+                        return ProposalNamespace(chains: Set(chains), methods: methods, events: events)
+                    }
+                    let uri = try await Pair.instance.create()
+                    try await Sign.instance.connect(requiredNamespaces: namespaces, topic: uri.topic)
+                    result(uri.absoluteString)
+                } catch let error {
+                    onError(code: "create_pair_error", errorMessage: error.localizedDescription)
+                    result(nil)
+                }
+            }
+        }
+        case "sendRequest": do {
+            Task {
+                do {
+                    let arguments = call.arguments as! [String: Any]
+                    let topic = arguments["topic"] as! String
+                    let method = arguments["method"] as! String
+                    let chainId = Blockchain(arguments["chainId"] as! String)!
+                    let requestParams = AnyCodable(arguments["params"] as! [String])
+                    let request = Request(topic: topic, method: method, params: requestParams, chainId: chainId)
+                    try await Sign.instance.request(params: request)
+                } catch let error {
+                    onError(code: "send_request_error", errorMessage: error.localizedDescription)
+                }
+                result(nil)
+            }
+        }
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -319,9 +368,30 @@ extension Request {
     }
 }
 
+extension Response {
+    func toFlutterValue() -> NSDictionary {
+        return [
+            "id": try! self.id.json(),
+            "topic": self.topic,
+            "results": try! self.result.json()
+        ];
+    }
+}
+
 extension Date {
     func toUtcIsoDateString() -> String {
         let utcISODateFormatter = ISO8601DateFormatter()
         return utcISODateFormatter.string(from: self);
     }
+}
+
+func toRejectionValue(rejection: (Session.Proposal, Reason)) -> NSDictionary {
+    return [
+        "id": rejection.0.id,
+        "topic": rejection.0.pairingTopic,
+        "reason": [
+            "code": rejection.1.code,
+            "message": rejection.1.message
+        ]
+    ];
 }
