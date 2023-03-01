@@ -9,3 +9,7 @@
 ## 0.1.1
 
 * Upgrade to the latest SDKs Android Bom 1.4.1, iOS 1.3.0
+
+## 1.0.0
+
+* Official support for DApps by creating Pairing, connect with Wallet, send Request and receive Response

@@ -1,14 +1,16 @@
 # wallet_connect_v2
 
-WalletConnect V2 for Flutter
+WalletConnect V2 for Flutter, available for both Wallet and DApp!
 
-This lib came from the demand of our project [Avacus](https://avacus.cc)
+Fully support at [Avacus](https://avacus.cc), you can experience both Mainnet and Testnet as it supports network customization.
 
-We used to try to make in pure Dart but it cost much time to build and test so we decide to make an wrapper to consume SDKs from WalletConnect team!
+Feel free to use and don't hesitate to raise issue if there are.
 
 ## Getting Started
 
-We make very detail in example so you can follow it.
+We make very detail in example so you can follow it for both Wallet and Dapp.
+
+The connection is kept stable follow app lifecycle.
 
 Import and create instance
 ```dart
@@ -24,61 +26,98 @@ _client.init(projectId: projectId, appMetadata: walletMetadata);
 
 Listen needed events from our export
 ```dart
-typedef OnConnectionStatus = Function(bool isConnected);
-typedef OnSessionProposal = Function(SessionProposal proposal);
-typedef OnSessionSettle = Function(Session session);
-typedef OnSessionUpdate = Function(String topic);
-typedef OnSessionDelete = Function(String topic);
-typedef OnSessionRequest = Function(SessionRequest request);
-typedef OnEventError = Function(String code, String message);
+// Wallet & DApp, listen to socket connection change
+_client.onConnectionStatus = (isConnected) {
+  // do something, for e.g update UI
+}
 
-// example of listen to session proposal
+// Wallet only, listen to session proposal from DApp
 _client.onSessionProposal = (proposal) {
-  // do approve and reject session here
+  // proposal request, handle to approve or reject
+}
+
+// Wallet & DApp, listen to new session which has been established
+_client.onSessionSettle = (session) {
+  // we have detail information of session
+}
+
+// Wallet & DApp
+_client.onSessionUpdate = (topic) {
+  // the session of topic has been updated
+}
+
+// Wallet & DApp
+_client.onSessionDelete = (topic) {
+  // the session of topic has been deleted
+}
+
+// Wallet & DApp
+_client.onSessionRequest = (request) {
+  // session request, handle to approve or reject
+}
+
+// DApp only, when Wallet reject the proposal
+_client.onSessionRejection = (topic) {
+  // handle rejection here, for e.g hide the uri popup
+}
+
+// DApp only, when Wallet approve and reject session request
+_client.onSessionResponse = (topic) {
+  // handle response here, for e.g update UI
 }
 ```
 
-Connect to listen event
+Connect to listen event, for Wallet & DApp to connect to Relay service
 ```dart
 _client.connect();
 ```
 
-Disconnect
+Disconnect, for Wallet & DApp to disconnect with Relay service
 ```dart
 _client.disconnect();
 ```
 
-Pair with DApps
+Pair with DApps for Wallet only
 ```dart
 _client.pair(uri: uri);
 ```
 
-Approve session
+Approve session for Wallet only
 ```dart
 _client.approveSession(approval: approval);
 ```
 
-Reject session
+Reject session for Wallet only
 ```dart
 _client.rejectSession(proposalId: proposal.id);
 ```
 
-Disconnect session
+Disconnect session for Wallet & DApp
 ```dart
 _client.disconnectSession(topic: topic);
 ```
 
-Update session
+Update session for Wallet & DApp
 ```dart
 _client.updateSession(approval: updateApproval);
 ```
 
-Approve request
+Approve request for Wallet only
 ```dart
 _client.approveRequest(topic: topic, requestId: requestId, result: result);
 ```
 
-Reject request
+Reject request for Wallet only
 ```dart
 _client.rejectRequest(topic: topic, requestId: requestId);
+```
+
+Create pair for DApp only
+```dart
+_client.createPair(namespaces: namespaces);
+```
+
+Send request for DApp only
+```dart
+_client.sendRequest(request: request);
 ```
