@@ -46,8 +46,9 @@ android {
     }
 
     dependencies {
-        implementation("com.walletconnect:sign:2.7.1")
-        implementation("com.walletconnect:android-core:1.9.1")
         implementation 'com.google.code.gson:gson:2.10'
+        implementation(platform("com.walletconnect:android-bom:1.4.1"))
+        implementation("com.walletconnect:android-core")
+        implementation("com.walletconnect:sign")
     }
 }

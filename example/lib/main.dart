@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' hide Request;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallet_connect_v2/wallet_connect_v2.dart';
 import 'package:web3dart/crypto.dart';
@@ -38,6 +38,9 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   static const projectId = '45caf086591c46efb6e9f19b6104d7e8';
 
+  static const _exampleMessage =
+      '0x4d7920656d61696c206973206a6f686e40646f652e636f6d202d2031363533333933373535313531';
+
   final _walletConnectV2Plugin = WalletConnectV2();
   final _walletMetadata = AppMetadata(
       name: 'Flutter Wallet',
@@ -49,6 +52,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
 
   late String _privateKey;
   late String _address;
+  String? _dappTopic;
+  String? _tempDappTopic;
+  String? _uriDisplay;
 
   bool _isLoading = false;
   bool _isInitiated = false;
@@ -143,8 +149,27 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       }
     };
 
-    _walletConnectV2Plugin.onSessionSettle = (session) {
-      _refreshSessions();
+    _walletConnectV2Plugin.onSessionSettle = (session) async {
+      await _refreshSessions();
+      if (_tempDappTopic == null) return;
+      _dappTopic = session.topic;
+      _tempDappTopic = null;
+      setState(() {});
+      _setDappTopic(_dappTopic!);
+    };
+
+    _walletConnectV2Plugin.onSessionRejection = (topic) async {
+      await _refreshSessions();
+      if (_tempDappTopic == topic) {
+        _tempDappTopic = null;
+        setState(() {});
+      }
+    };
+
+    _walletConnectV2Plugin.onSessionResponse = (response) async {
+      _showDialog(
+          child: Text(
+              'Message: $_exampleMessage\n\n${response.results is String ? 'Signature' : 'Error'}: ${response.results}'));
     };
 
     _walletConnectV2Plugin.onSessionUpdate = (_) {
@@ -289,149 +314,250 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           child: _isLoading
               ? const CupertinoActivityIndicator()
               : _isInitiated
-                  ? Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Sessions:'),
-                          Expanded(
-                              child: _sessions.isEmpty
-                                  ? const Center(
-                                      child: Text(
-                                          'No sessions\n\nPair wallet connect uri and approve to have session',
-                                          textAlign: TextAlign.center))
-                                  : ListView.separated(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 16),
-                                      itemBuilder: (_, index) {
-                                        final session = _sessions[index];
-                                        return Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(session.toJson().toString()),
-                                              TextButton(
-                                                  onPressed: () async {
-                                                    try {
-                                                      await _walletConnectV2Plugin
-                                                          .disconnectSession(
-                                                              topic: session
-                                                                  .topic);
-                                                      _refreshSessions();
-                                                    } catch (e) {
-                                                      _showDialog(
-                                                          child: Text(
-                                                              'Disconnect session error: ${e.toString()}'));
-                                                    }
-                                                  },
-                                                  child:
-                                                      const Text('Disconnect'))
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      separatorBuilder: (_, __) =>
-                                          const SizedBox(height: 16),
-                                      itemCount: _sessions.length)),
-                          Container(
-                              width: double.infinity,
-                              height: 1,
-                              color: Colors.grey,
-                              margin: const EdgeInsets.symmetric(vertical: 16)),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  ? _tempDappTopic != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Account:'),
-                              const SizedBox(height: 8),
-                              Text('Private Key: $_privateKey'),
-                              const SizedBox(height: 8),
-                              Text('Address: $_address'),
-                              const SizedBox(height: 8),
-                              const Text(
-                                  'PLEASE CHOOSE GOERLI NETWORK ONLY TO PAIR!',
-                                  style: TextStyle(color: Colors.redAccent)),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                width: double.infinity,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        width: 1, color: Colors.grey)),
-                                child: TextFormField(
-                                    controller: _uriController,
-                                    maxLines: 1,
-                                    maxLength: 512,
-                                    cursorWidth: 2,
-                                    cursorColor: Colors.grey,
-                                    decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: "Enter wallet connect URI",
-                                        counterText: '')),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Clipboard.getData('text/plain')
-                                            .then((data) {
-                                          if (data?.text == null) return;
-                                          _uriController.text = data!.text!;
-                                        });
-                                      },
-                                      child: const Text('Paste')),
-                                  TextButton(
-                                      onPressed: () async {
-                                        try {
-                                          setState(() {
-                                            _isLoading = true;
-                                          });
-                                          final uri = _uriController.text;
-                                          if (uri.trim().isEmpty) {
-                                            _showDialog(
-                                                child: const Text(
-                                                    'Please paste the WalletConnect V2 URI then do Pair'));
-                                            return;
-                                          }
-                                          _uriController.clear();
-                                          await _walletConnectV2Plugin.pair(
-                                              uri: uri);
-                                        } catch (e) {
-                                          _showDialog(
-                                              child: Text(
-                                                  'Pair error: ${e.toString()}'));
-                                        } finally {
-                                          setState(() {
-                                            _isLoading = false;
-                                          });
-                                        }
-                                      },
-                                      child: const Text('Pair'))
-                                ],
-                              )
+                              Text('URI: $_uriDisplay'),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: _uriDisplay));
+                                  },
+                                  child: const Text('Copy')),
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _tempDappTopic = null;
+                                    });
+                                  },
+                                  child: const Text('Back'))
                             ],
                           ),
-                        ],
-                      ),
-                    )
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _dappTopic == null
+                                  ? TextButton(
+                                      child: const Text('Create Pair'),
+                                      onPressed: () async {
+                                        final uri = await _walletConnectV2Plugin
+                                            .createPair(namespaces: {
+                                          'eip155': ProposalNamespace(chains: [
+                                            'eip155:5'
+                                          ], methods: [
+                                            "eth_sendTransaction",
+                                            "personal_sign",
+                                            "eth_signTypedData"
+                                          ], events: [])
+                                        });
+                                        if (uri == null) return;
+                                        _uriDisplay = uri;
+                                        _tempDappTopic =
+                                            uri.split('@')[0].split(':')[1];
+                                        setState(() {});
+                                      })
+                                  : Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Topic: $_dappTopic'),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextButton(
+                                                child: const Text(
+                                                    'Send personal_sign Request'),
+                                                onPressed: () async {
+                                                  _walletConnectV2Plugin
+                                                      .sendRequest(
+                                                          request: Request(
+                                                              method:
+                                                                  'personal_sign',
+                                                              chainId:
+                                                                  'eip155:5',
+                                                              topic:
+                                                                  _dappTopic!,
+                                                              params: [
+                                                        _exampleMessage,
+                                                        _sessions
+                                                            .firstWhere(
+                                                                (element) =>
+                                                                    element
+                                                                        .topic ==
+                                                                    _dappTopic!)
+                                                            .namespaces[
+                                                                'eip155']!
+                                                            .accounts
+                                                            .first
+                                                            .split(':')
+                                                            .last
+                                                      ]));
+                                                }),
+                                            TextButton(
+                                                child: const Text('Disconnect'),
+                                                onPressed: () async {
+                                                  await _walletConnectV2Plugin
+                                                      .disconnectSession(
+                                                          topic: _dappTopic!);
+                                                  _refreshSessions();
+                                                })
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                              Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  color: Colors.grey,
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 16)),
+                              const Text('Sessions:'),
+                              Expanded(
+                                  child: _sessions.isEmpty
+                                      ? const Center(
+                                          child: Text(
+                                              'No sessions\n\nPair wallet connect uri and approve to have session',
+                                              textAlign: TextAlign.center))
+                                      : ListView.separated(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16),
+                                          itemBuilder: (_, index) {
+                                            final session = _sessions[index];
+                                            return Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                      width: 1,
+                                                      color: Colors.grey)),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(session
+                                                      .toJson()
+                                                      .toString()),
+                                                  TextButton(
+                                                      onPressed: () async {
+                                                        await _walletConnectV2Plugin
+                                                            .disconnectSession(
+                                                                topic: session
+                                                                    .topic);
+                                                        _refreshSessions();
+                                                      },
+                                                      child: const Text(
+                                                          'Disconnect'))
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 16),
+                                          itemCount: _sessions.length)),
+                              Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  color: Colors.grey,
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 16)),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Account:'),
+                                  const SizedBox(height: 8),
+                                  Text('Private Key: $_privateKey'),
+                                  const SizedBox(height: 8),
+                                  Text('Address: $_address'),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                      'PLEASE CHOOSE GOERLI NETWORK ONLY TO PAIR!',
+                                      style:
+                                          TextStyle(color: Colors.redAccent)),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    width: double.infinity,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            width: 1, color: Colors.grey)),
+                                    child: TextFormField(
+                                        controller: _uriController,
+                                        maxLines: 1,
+                                        maxLength: 512,
+                                        cursorWidth: 2,
+                                        cursorColor: Colors.grey,
+                                        decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText:
+                                                "Enter wallet connect URI",
+                                            counterText: '')),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Clipboard.getData('text/plain')
+                                                .then((data) {
+                                              if (data?.text == null) return;
+                                              _uriController.text = data!.text!;
+                                            });
+                                          },
+                                          child: const Text('Paste')),
+                                      TextButton(
+                                          onPressed: () async {
+                                            try {
+                                              setState(() {
+                                                _isLoading = true;
+                                              });
+                                              final uri = _uriController.text;
+                                              if (uri.trim().isEmpty) {
+                                                _showDialog(
+                                                    child: const Text(
+                                                        'Please paste the WalletConnect V2 URI then do Pair'));
+                                                return;
+                                              }
+                                              _uriController.clear();
+                                              await _walletConnectV2Plugin.pair(
+                                                  uri: uri);
+                                            } catch (e) {
+                                              _showDialog(
+                                                  child: Text(
+                                                      'Pair error: ${e.toString()}'));
+                                            } finally {
+                                              setState(() {
+                                                _isLoading = false;
+                                              });
+                                            }
+                                          },
+                                          child: const Text('Pair'))
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
                   : TextButton(
                       onPressed: () async {
                         setState(() {
                           _isLoading = true;
                         });
+                        await _initDapp();
                         await _initWallet();
                         await _walletConnectV2Plugin.init(
                             projectId: projectId, appMetadata: _walletMetadata);
@@ -443,13 +569,18 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
-  void _refreshSessions() async {
+  Future _refreshSessions() async {
     try {
       final sessions = await _walletConnectV2Plugin.getActivatedSessions();
-      setState(() {
-        this._sessions.clear();
-        this._sessions.addAll(sessions);
-      });
+      if (sessions
+          .where((element) => element.topic == _dappTopic)
+          .toList()
+          .isEmpty) {
+        _setDappTopic(_dappTopic = null);
+      }
+      _sessions.clear();
+      _sessions.addAll(sessions);
+      setState(() {});
     } catch (e) {
       _showDialog(child: Text('Refresh sessions error: ${e.toString()}'));
     }
@@ -488,6 +619,19 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     _privateKey = HEX.encode(pathWallet.privateKey!);
     final private = EthPrivateKey.fromHex(_privateKey);
     _address = (await private.extractAddress()).hexEip55;
+  }
+
+  Future _initDapp() async {
+    final sp = await SharedPreferences.getInstance();
+    _dappTopic = sp.getString('dapp_topic');
+  }
+
+  Future _setDappTopic(String? topic) async {
+    final sp = await SharedPreferences.getInstance();
+    if (topic != null) {
+      return sp.setString('dapp_topic', topic);
+    }
+    return sp.remove('dapp_topic');
   }
 
   @override
