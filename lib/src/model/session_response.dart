@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'session_response.g.dart';
@@ -6,6 +8,8 @@ part 'session_response.g.dart';
 class SessionResponse {
   final String id;
   final String topic;
+
+  @JsonKey(fromJson: fromResultsJson)
   dynamic results;
 
   SessionResponse({required this.id, required this.topic, this.results});
@@ -14,4 +18,8 @@ class SessionResponse {
       _$SessionResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$SessionResponseToJson(this);
+
+  static dynamic fromResultsJson(String json) {
+    return jsonDecode(json);
+  }
 }

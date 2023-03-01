@@ -128,6 +128,58 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }
                 SignClient.setWalletDelegate(walletDelegate)
 
+                val dappDelegate = object : SignClient.DappDelegate {
+                    override fun onSessionApproved(approvedSession: Sign.Model.ApprovedSession) {
+                        val session = SignClient.getActiveSessionByTopic(approvedSession.topic)
+                        if (session != null) {
+                            onEvent(
+                                name = "session_settle", data = session.toFlutterValue()
+                            )
+                        }
+                    }
+
+                    override fun onSessionRejected(rejectedSession: Sign.Model.RejectedSession) {
+                        onEvent(
+                            name = "session_rejection", data = rejectedSession.toFlutterValue()
+                        )
+                    }
+
+                    override fun onSessionUpdate(updatedSession: Sign.Model.UpdatedSession) {
+                        // Unused
+                    }
+
+                    override fun onSessionExtend(session: Sign.Model.Session) {
+                        // Unused
+                    }
+
+                    override fun onSessionEvent(sessionEvent: Sign.Model.SessionEvent) {
+                        // Unused
+                    }
+
+                    override fun onSessionDelete(deletedSession: Sign.Model.DeletedSession) {
+                        // Handled by Wallet Delegate
+                    }
+
+                    override fun onSessionRequestResponse(response: Sign.Model.SessionRequestResponse) {
+                        onEvent(
+                            name = "session_response", data = response.toFlutterValue()
+                        )
+                    }
+
+                    override fun onConnectionStateChange(state: Sign.Model.ConnectionState) {
+                        // Handled by Wallet Delegate
+                    }
+
+                    override fun onError(error: Sign.Model.Error) {
+                        onError(
+                            "delegate_error",
+                            errorMessage = error.throwable.message ?: ""
+                        )
+                    }
+                }
+
+                SignClient.setDappDelegate(dappDelegate)
+
                 result.success(null)
             }
             "connect" -> {
@@ -187,7 +239,7 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 result.success(null)
             }
             "getActivatedSessions" -> {
-                val sessions = SignClient.getListOfSettledSessions()
+                val sessions = SignClient.getListOfActiveSessions()
                 result.success(sessions.map { it.toFlutterValue() })
             }
             "disconnectSession" -> {
@@ -248,6 +300,45 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     onError("reject_request_error", errorMessage = it.throwable.message ?: "")
                 })
                 result.success(null)
+            }
+            "createPair" -> {
+                val arguments = call.arguments<Map<String, Any>>()!!
+                val gson = Gson()
+                val namespaces = arguments.mapValues {
+                    gson.fromJson(
+                        gson.toJson(it.value), Sign.Model.Namespace.Proposal::class.java
+                    )
+                }
+                val pairing: Core.Model.Pairing? = CoreClient.Pairing.create {
+                    onError("create_pair_error", errorMessage = it.throwable.message ?: "")
+                }
+                if (pairing == null) {
+                    result.success(null)
+                    return
+                }
+                val connectParams = Sign.Params.Connect(namespaces = namespaces, pairing = pairing)
+                SignClient.connect(connectParams, {
+                    result.success(pairing.uri)
+                }, {
+                    result.success(null)
+                    onError("create_pair_error", errorMessage = it.throwable.message ?: "")
+                })
+            }
+            "sendRequest" -> {
+                val arguments = call.arguments<Map<String, Any>>()!!
+                val gson = Gson()
+                val requestParams = Sign.Params.Request(
+                    sessionTopic = arguments["topic"] as String,
+                    method = arguments["method"] as String,
+                    chainId = arguments["chainId"] as String,
+                    params = gson.toJson(arguments["params"])
+                )
+                SignClient.request(requestParams, onError = {
+                    result.success(null)
+                    onError("send_request_error", errorMessage = it.throwable.message ?: "")
+                }, onSuccess = {
+                    result.success(null)
+                })
             }
             else -> {
                 result.notImplemented()
@@ -365,4 +456,28 @@ fun Sign.Model.SessionRequest.toFlutterValue(): Map<String, String?> {
 fun Date.toUtcIsoDateString(): String {
     val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     return dateFormat.format(this)
+}
+
+fun Sign.Model.RejectedSession.toFlutterValue(): Map<String, String> {
+    return mapOf(
+        "topic" to this.topic
+    )
+}
+
+fun Sign.Model.SessionRequestResponse.toFlutterValue(): Map<String, Any> {
+    val results: Any = if (this.result is Sign.Model.JsonRpcResponse.JsonRpcResult) {
+        Gson().toJson((this.result as Sign.Model.JsonRpcResponse.JsonRpcResult).result)
+    } else {
+        Gson().toJson(
+            mapOf(
+                "code" to (this.result as Sign.Model.JsonRpcResponse.JsonRpcError).code,
+                "message" to (this.result as Sign.Model.JsonRpcResponse.JsonRpcError).message
+            )
+        )
+    }
+    return mapOf(
+        "id" to this.result.id.toString(),
+        "topic" to this.topic,
+        "results" to results
+    )
 }

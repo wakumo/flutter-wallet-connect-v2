@@ -387,11 +387,6 @@ extension Date {
 
 func toRejectionValue(rejection: (Session.Proposal, Reason)) -> NSDictionary {
     return [
-        "id": rejection.0.id,
-        "topic": rejection.0.pairingTopic,
-        "reason": [
-            "code": rejection.1.code,
-            "message": rejection.1.message
-        ]
+        "topic": rejection.0.pairingTopic
     ];
 }

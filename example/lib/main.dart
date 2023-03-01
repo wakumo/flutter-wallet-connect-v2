@@ -38,6 +38,9 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   static const projectId = '45caf086591c46efb6e9f19b6104d7e8';
 
+  static const _exampleMessage =
+      '0x4d7920656d61696c206973206a6f686e40646f652e636f6d202d2031363533333933373535313531';
+
   final _walletConnectV2Plugin = WalletConnectV2();
   final _walletMetadata = AppMetadata(
       name: 'Flutter Wallet',
@@ -164,7 +167,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     };
 
     _walletConnectV2Plugin.onSessionResponse = (response) async {
-      debugPrint('----onResponse: ${response.results}');
+      _showDialog(
+          child: Text(
+              'Message: $_exampleMessage\n\n${response.results is String ? 'Signature' : 'Error'}: ${response.results}'));
     };
 
     _walletConnectV2Plugin.onSessionUpdate = (_) {
@@ -365,10 +370,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                       children: [
                                         Text('Topic: $_dappTopic'),
                                         Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             TextButton(
-                                                child:
-                                                    const Text('Send Request'),
+                                                child: const Text(
+                                                    'Send personal_sign Request'),
                                                 onPressed: () async {
                                                   _walletConnectV2Plugin
                                                       .sendRequest(
@@ -380,8 +387,19 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                               topic:
                                                                   _dappTopic!,
                                                               params: [
-                                                        "0x4d7920656d61696c206973206a6f686e40646f652e636f6d202d2031363533333933373535313531",
-                                                        "0x4C27F93CA8C23841193d31912CcC10d5de46bE03"
+                                                        _exampleMessage,
+                                                        _sessions
+                                                            .firstWhere(
+                                                                (element) =>
+                                                                    element
+                                                                        .topic ==
+                                                                    _dappTopic!)
+                                                            .namespaces[
+                                                                'eip155']!
+                                                            .accounts
+                                                            .first
+                                                            .split(':')
+                                                            .last
                                                       ]));
                                                 }),
                                             TextButton(

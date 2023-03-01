@@ -10,7 +10,7 @@ SessionResponse _$SessionResponseFromJson(Map<String, dynamic> json) =>
     SessionResponse(
       id: json['id'] as String,
       topic: json['topic'] as String,
-      results: json['results'],
+      results: SessionResponse.fromResultsJson(json['results'] as String),
     );
 
 Map<String, dynamic> _$SessionResponseToJson(SessionResponse instance) =>
