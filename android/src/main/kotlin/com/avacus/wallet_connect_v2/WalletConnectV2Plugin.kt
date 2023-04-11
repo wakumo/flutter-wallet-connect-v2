@@ -183,15 +183,17 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 result.success(null)
             }
             "connect" -> {
-                CoreClient.Relay.connect {
-                    onError("connect_error", errorMessage = it)
+                val handleError: (Core.Model.Error) -> Unit = {
+                    onError("connect_error", errorMessage = it.throwable.message ?: "")
                 }
+                CoreClient.Relay.connect(onError = handleError)
                 result.success(null)
             }
             "disconnect" -> {
-                CoreClient.Relay.disconnect {
-                    onError("disconnect_error", errorMessage = it)
+                val handleError: (Core.Model.Error) -> Unit = {
+                    onError("disconnect_error", errorMessage = it.throwable.message ?: "")
                 }
+                CoreClient.Relay.disconnect(onError = handleError)
                 result.success(null)
             }
             "pair" -> {
@@ -333,12 +335,13 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     chainId = arguments["chainId"] as String,
                     params = gson.toJson(arguments["params"])
                 )
-                SignClient.request(requestParams, onError = {
+                val handleSuccess: (Sign.Model.SentRequest) -> Unit = {
                     result.success(null)
+                }
+                val handleError: (Sign.Model.Error) -> Unit = {
                     onError("send_request_error", errorMessage = it.throwable.message ?: "")
-                }, onSuccess = {
-                    result.success(null)
-                })
+                }
+                SignClient.request(requestParams, onError = handleError, onSuccess = handleSuccess)
             }
             else -> {
                 result.notImplemented()
@@ -403,14 +406,7 @@ fun Sign.Model.SessionProposal.toFlutterValue(): Map<String, Any> {
             key to mapOf(
                 "chains" to value.chains,
                 "methods" to value.methods,
-                "events" to value.events,
-                "extensions" to value.extensions?.map {
-                    mapOf(
-                        "chains" to it.chains,
-                        "methods" to it.methods,
-                        "events" to it.events,
-                    )
-                },
+                "events" to value.events
             )
         }.toMap()
     )
@@ -430,14 +426,7 @@ fun Sign.Model.Session.toFlutterValue(): Map<String, Any> {
             key to mapOf(
                 "accounts" to value.accounts,
                 "methods" to value.methods,
-                "events" to value.events,
-                "extensions" to value.extensions?.map {
-                    mapOf(
-                        "accounts" to it.accounts,
-                        "methods" to it.methods,
-                        "events" to it.events,
-                    )
-                },
+                "events" to value.events
             )
         }.toMap()
     )
