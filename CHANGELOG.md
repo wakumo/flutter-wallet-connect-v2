@@ -13,3 +13,7 @@
 ## 1.0.0
 
 * Official support for DApps by creating Pairing, connect with Wallet, send Request and receive Response
+
+## 1.0.1
+
+* Upgrade to the latest SDKs Android Bom 1.8.0
