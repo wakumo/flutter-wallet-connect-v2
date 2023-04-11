@@ -59,7 +59,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   bool _isLoading = false;
   bool _isInitiated = false;
   bool _isForeground = true;
-  bool _isBackground = false;
 
   @override
   void initState() {
@@ -181,7 +180,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     };
 
     _walletConnectV2Plugin.onEventError = (code, message) {
-      _showDialog(child: Text(message));
+      _showDialog(child: Text('code: $code | message: $message'));
     };
 
     _walletConnectV2Plugin.onSessionRequest = (request) async {
@@ -639,27 +638,19 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        _isBackground = false;
         _isForeground = true;
         debugPrint('---: DO CONNECT');
         if (_isInitiated) {
           _walletConnectV2Plugin.connect();
         }
         break;
-      case AppLifecycleState.inactive:
-        _isForeground = false;
-        if (!_isBackground) {
-          debugPrint('---: DO DISCONNECT');
-          if (_isInitiated) {
-            _walletConnectV2Plugin.disconnect();
-          }
-        }
-        break;
       case AppLifecycleState.paused:
         _isForeground = false;
-        _isBackground = true;
+        debugPrint('---: DO DISCONNECT');
+        if (_isInitiated) {
+          _walletConnectV2Plugin.disconnect();
+        }
         break;
-      case AppLifecycleState.detached:
       default:
         break;
     }
