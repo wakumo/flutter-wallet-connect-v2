@@ -17,3 +17,7 @@
 ## 1.0.1
 
 * Upgrade to the latest SDKs Android Bom 1.8.0
+
+## 1.0.2
+
+* Add `redirect` field into AppMetadata

@@ -8,12 +8,14 @@ class AppMetadata {
   final String url;
   final String description;
   final List<String> icons;
+  final String? redirect;
 
   AppMetadata(
       {required this.name,
       required this.url,
       required this.description,
-      required this.icons});
+      required this.icons,
+      this.redirect});
 
   factory AppMetadata.fromJson(Map<String, dynamic> json) =>
       _$AppMetadataFromJson(json);

@@ -24,7 +24,13 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
         case "init": do {
                 let arguments = call.arguments as! [String: Any]
                 let projectId = arguments["projectId"] as! String
-                let appMetadata = arguments["appMetadata"] as! [String: Any]
+                var appMetadata = arguments["appMetadata"] as! [String: Any]
+                if (appMetadata["redirect"] != nil) {
+                    appMetadata["redirect"] = [
+                        "native": (appMetadata["redirect"] as! String).starts(with: "http") ? nil : (appMetadata["redirect"] as? String),
+                        "universal": (appMetadata["redirect"] as! String).starts(with: "http") ? (appMetadata["redirect"] as? String) : nil,
+                    ];
+                }
                 let metadata: AppMetadata = try! JSONDecoder().decode(AppMetadata.self, from: JSONSerialization.data(withJSONObject: appMetadata))
                 
                 Networking.configure(projectId: projectId, socketFactory: SocketFactory(), socketConnectionType: .manual)
@@ -310,6 +316,7 @@ extension AppMetadata {
             "description": self.description,
             "url": self.url,
             "icons": self.icons,
+            "redirect": self.redirect?.universal != nil ? self.redirect?.universal as Any : self.redirect?.native as Any
         ];
     }
 }

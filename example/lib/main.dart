@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:bip39/bip39.dart' as bip39;
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' hide Request;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wallet_connect_v2/wallet_connect_v2.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -46,7 +48,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       name: 'Flutter Wallet',
       url: 'https://avacus.cc',
       description: 'Flutter Wallet by Avacus',
-      icons: ['https://avacus.cc/apple-icon-180x180.png']);
+      icons: ['https://avacus.cc/apple-icon-180x180.png'],
+      redirect: 'wcexample');
   final _uriController = TextEditingController();
   final List<Session> _sessions = [];
 
@@ -344,12 +347,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                             children: [
                               _dappTopic == null
                                   ? TextButton(
-                                      child: const Text('Create Pair'),
+                                      child: const Text(
+                                          'Create Pair for Ethereum Mainnet'),
                                       onPressed: () async {
                                         final uri = await _walletConnectV2Plugin
                                             .createPair(namespaces: {
                                           'eip155': ProposalNamespace(chains: [
-                                            'eip155:5'
+                                            'eip155:1'
                                           ], methods: [
                                             "eth_sendTransaction",
                                             "personal_sign",
@@ -375,32 +379,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                             TextButton(
                                                 child: const Text(
                                                     'Send personal_sign Request'),
-                                                onPressed: () async {
-                                                  _walletConnectV2Plugin
-                                                      .sendRequest(
-                                                          request: Request(
-                                                              method:
-                                                                  'personal_sign',
-                                                              chainId:
-                                                                  'eip155:5',
-                                                              topic:
-                                                                  _dappTopic!,
-                                                              params: [
-                                                        _exampleMessage,
-                                                        _sessions
-                                                            .firstWhere(
-                                                                (element) =>
-                                                                    element
-                                                                        .topic ==
-                                                                    _dappTopic!)
-                                                            .namespaces[
-                                                                'eip155']!
-                                                            .accounts
-                                                            .first
-                                                            .split(':')
-                                                            .last
-                                                      ]));
-                                                }),
+                                                onPressed: () =>
+                                                    onSendPersonalMessageTest()),
                                             TextButton(
                                                 child: const Text('Disconnect'),
                                                 onPressed: () async {
@@ -568,6 +548,22 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     );
   }
 
+  void onSendPersonalMessageTest() async {
+    final session =
+        _sessions.firstWhere((element) => element.topic == _dappTopic!);
+    await _walletConnectV2Plugin.sendRequest(
+        request: Request(
+            method: 'personal_sign',
+            chainId: 'eip155:1',
+            topic: _dappTopic!,
+            params: [
+          _exampleMessage,
+          session.namespaces['eip155']!.accounts.first.split(':').last
+        ]));
+    // TODO: don't forget to check if where is the source come from to determine launch or not
+    session.peer.redirect?.launch();
+  }
+
   Future _refreshSessions() async {
     try {
       final sessions = await _walletConnectV2Plugin.getActivatedSessions();
@@ -661,5 +657,28 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _walletConnectV2Plugin.dispose();
     super.dispose();
+  }
+}
+
+extension StringExt on String {
+  Future launch({int delayInMillis = 500}) async {
+    try {
+      await Future.delayed(Duration(milliseconds: delayInMillis));
+      final uri = Uri.parse(this);
+      if (Platform.isAndroid) {
+        final isAbleToLaunch = await canLaunchUrl(uri);
+        if (!isAbleToLaunch) return;
+      }
+      if (startsWith('http')) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else if (contains('://')) {
+        await launchUrl(uri);
+      } else {
+        await launchUrl(Uri.parse('$this://'));
+      }
+    } catch (_) {}
   }
 }

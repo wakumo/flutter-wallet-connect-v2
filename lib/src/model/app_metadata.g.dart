@@ -11,6 +11,7 @@ AppMetadata _$AppMetadataFromJson(Map<String, dynamic> json) => AppMetadata(
       url: json['url'] as String,
       description: json['description'] as String,
       icons: (json['icons'] as List<dynamic>).map((e) => e as String).toList(),
+      redirect: json['redirect'] as String?,
     );
 
 Map<String, dynamic> _$AppMetadataToJson(AppMetadata instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$AppMetadataToJson(AppMetadata instance) =>
       'url': instance.url,
       'description': instance.description,
       'icons': instance.icons,
+      'redirect': instance.redirect,
     };
