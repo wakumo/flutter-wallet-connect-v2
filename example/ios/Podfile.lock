@@ -3,6 +3,8 @@ PODS:
   - shared_preferences_ios (0.0.1):
     - Flutter
   - Starscream (3.1.1)
+  - url_launcher_ios (0.0.1):
+    - Flutter
   - wallet_connect_v2 (0.0.1):
     - Flutter
     - Starscream (= 3.1.1)
@@ -28,6 +30,7 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - wallet_connect_v2 (from `.symlinks/plugins/wallet_connect_v2/ios`)
 
 SPEC REPOS:
@@ -40,6 +43,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   shared_preferences_ios:
     :path: ".symlinks/plugins/shared_preferences_ios/ios"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
   wallet_connect_v2:
     :path: ".symlinks/plugins/wallet_connect_v2/ios"
 
@@ -47,6 +52,7 @@ SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
+  url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
   wallet_connect_v2: 6dbafd13b16a32d40a68d223001d527441992baf
   WalletConnectSwiftV2: 4b90e4115ad47e8b8ce749be6de0d8b13a33225a
 

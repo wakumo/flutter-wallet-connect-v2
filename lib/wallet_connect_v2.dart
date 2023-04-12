@@ -43,6 +43,7 @@ class WalletConnectV2 {
   /// DAPP only, listen to action of approve/reject request from wallet
   OnSessionResponse? onSessionResponse;
 
+  /// Initiate SDKs
   Future<void> init(
       {required String projectId, required AppMetadata appMetadata}) {
     _eventSubscription =
@@ -75,39 +76,48 @@ class WalletConnectV2 {
         .init(projectId: projectId, appMetadata: appMetadata);
   }
 
+  /// Connect to listen event, for Wallet & DApp to connect to Relay service
   Future<void> connect() {
     return WalletConnectV2Platform.instance.connect();
   }
 
+  /// Disconnect, for Wallet & DApp to disconnect with Relay service
   Future<void> disconnect() {
     return WalletConnectV2Platform.instance.disconnect();
   }
 
+  /// Pair with DApps for Wallet only
   Future<void> pair({required String uri}) {
     return WalletConnectV2Platform.instance.pair(uri: uri);
   }
 
+  /// Approve session for Wallet only
   Future<void> approveSession({required SessionApproval approval}) {
     return WalletConnectV2Platform.instance.approve(approval: approval);
   }
 
+  /// Reject session for Wallet only
   Future<void> rejectSession({required String proposalId}) {
     return WalletConnectV2Platform.instance.reject(proposalId: proposalId);
   }
 
+  /// Get current activated sessions
   Future<List<Session>> getActivatedSessions() {
     return WalletConnectV2Platform.instance.getActivatedSessions();
   }
 
+  /// Disconnect session for Wallet & DApp
   Future<void> disconnectSession({required String topic}) {
     return WalletConnectV2Platform.instance.disconnectSession(topic: topic);
   }
 
+  /// Update session for Wallet & DApp
   Future<void> updateSession({required SessionApproval updateApproval}) {
     return WalletConnectV2Platform.instance
         .updateSession(updateApproval: updateApproval);
   }
 
+  /// Approve request for Wallet only
   Future<void> approveRequest(
       {required String topic,
       required String requestId,
@@ -116,6 +126,7 @@ class WalletConnectV2 {
         .approveRequest(topic: topic, requestId: requestId, result: result);
   }
 
+  /// Reject request for Wallet only
   Future<void> rejectRequest(
       {required String topic, required String requestId}) {
     return WalletConnectV2Platform.instance
@@ -133,6 +144,7 @@ class WalletConnectV2 {
     return WalletConnectV2Platform.instance.sendRequest(request: request);
   }
 
+  /// Dispose the event subscription
   Future dispose() async {
     _eventSubscription?.cancel();
     _eventSubscription = null;

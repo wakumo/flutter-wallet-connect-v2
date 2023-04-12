@@ -71,8 +71,10 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
                 val walletDelegate = object : SignClient.WalletDelegate {
                     override fun onSessionProposal(sessionProposal: Sign.Model.SessionProposal) {
+                        // TODO: it should be have redirect here!
+                        // https://github.com/WalletConnect/WalletConnectKotlinV2/issues/792
                         onEvent(
-                            name = "proposal", data = sessionProposal.toFlutterValue()
+                            name = "proposal", data = sessionProposal.toFlutterValue(null)
                         )
                     }
 
@@ -401,6 +403,7 @@ fun Sign.Model.SessionProposal.toFlutterValue(): Map<String, Any> {
             "description" to this.description,
             "url" to this.url,
             "icons" to this.icons.map { it.toString() },
+            // TODO: should have redirect field here
         ),
         "namespaces" to this.requiredNamespaces.map { (key, value) ->
             key to mapOf(
@@ -420,6 +423,7 @@ fun Sign.Model.Session.toFlutterValue(): Map<String, Any> {
             "description" to this.metaData?.description,
             "url" to this.metaData?.url,
             "icons" to this.metaData?.icons,
+            "redirect" to this.metaData?.redirect
         ),
         "expiration" to Date(this.expiry).toUtcIsoDateString(),
         "namespaces" to this.namespaces.map { (key, value) ->
