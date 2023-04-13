@@ -7,7 +7,7 @@ class Request {
   final String method;
   final String chainId;
   final String topic;
-  final List<String> params;
+  final dynamic params;
 
   Request(
       {required this.method,

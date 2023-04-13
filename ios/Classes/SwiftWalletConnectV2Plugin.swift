@@ -255,7 +255,7 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                     let topic = arguments["topic"] as! String
                     let method = arguments["method"] as! String
                     let chainId = Blockchain(arguments["chainId"] as! String)!
-                    let requestParams = AnyCodable(arguments["params"] as! [String])
+                    let requestParams: AnyCodable = try! JSONDecoder().decode(AnyCodable.self, from: JSONSerialization.data(withJSONObject: arguments["params"]!))
                     let request = Request(topic: topic, method: method, params: requestParams, chainId: chainId)
                     try await Sign.instance.request(params: request)
                 } catch let error {

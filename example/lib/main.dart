@@ -355,6 +355,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                           'eip155': ProposalNamespace(chains: [
                                             'eip155:1'
                                           ], methods: [
+                                            "eth_signTransaction",
                                             "eth_sendTransaction",
                                             "personal_sign",
                                             "eth_signTypedData"
@@ -372,15 +373,18 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text('Topic: $_dappTopic'),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                        Wrap(
                                           children: [
                                             TextButton(
-                                                child: const Text(
-                                                    'Send personal_sign Request'),
+                                                child:
+                                                    const Text('personal_sign'),
                                                 onPressed: () =>
                                                     onSendPersonalMessageTest()),
+                                            TextButton(
+                                                child: const Text(
+                                                    'eth_signTransaction'),
+                                                onPressed: () =>
+                                                    onSendTransactionTest()),
                                             TextButton(
                                                 child: const Text('Disconnect'),
                                                 onPressed: () async {
@@ -559,6 +563,29 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             params: [
           _exampleMessage,
           session.namespaces['eip155']!.accounts.first.split(':').last
+        ]));
+    // TODO: don't forget to check if where is the source come from to determine launch or not
+    session.peer.redirect?.launch();
+  }
+
+  void onSendTransactionTest() async {
+    final session =
+        _sessions.firstWhere((element) => element.topic == _dappTopic!);
+    await _walletConnectV2Plugin.sendRequest(
+        request: Request(
+            method: 'eth_signTransaction',
+            chainId: 'eip155:1',
+            topic: _dappTopic!,
+            params: [
+          {
+            "from": "0xb60e8dd61c5d32be8058bb8eb970870f07233155",
+            "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
+            "gas": "0x76c0", // 30400
+            "gasPrice": "0x9184e72a000", // 10000000000000
+            "value": "0x9184e72a", // 2441406250
+            "data":
+                "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675"
+          }
         ]));
     // TODO: don't forget to check if where is the source come from to determine launch or not
     session.peer.redirect?.launch();

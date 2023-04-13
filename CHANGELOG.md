@@ -21,3 +21,7 @@
 ## 1.0.2
 
 * Add `redirect` field into AppMetadata
+
+## 1.0.3
+
+* Update session request params, add example for sending request

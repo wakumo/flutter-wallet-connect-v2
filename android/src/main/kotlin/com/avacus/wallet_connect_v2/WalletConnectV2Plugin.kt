@@ -74,7 +74,7 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                         // TODO: it should be have redirect here!
                         // https://github.com/WalletConnect/WalletConnectKotlinV2/issues/792
                         onEvent(
-                            name = "proposal", data = sessionProposal.toFlutterValue(null)
+                            name = "proposal", data = sessionProposal.toFlutterValue()
                         )
                     }
 
