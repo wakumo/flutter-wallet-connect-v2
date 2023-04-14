@@ -1,6 +1,6 @@
 name: wallet_connect_v2
-description: Wallet Connect V2 for Flutter, available for both Wallet and DApp to interact with Blockchain easier
-version: 1.0.2
+description: Wallet Connect V2 for Flutter, available for both Wallet and DApp to interact easier
+version: 1.0.3
 homepage: https://avacus.cc
 repository: https://github.com/wakumo/flutter-wallet-connect-v2
 
