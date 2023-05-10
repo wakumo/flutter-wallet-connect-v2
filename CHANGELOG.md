@@ -25,3 +25,8 @@
 ## 1.0.3
 
 * Update session request params, add example for sending request
+
+## 1.0.4
+
+* Upgrade to the latest SDKs Android Bom 1.9.3
+* Add missing redirect field from session proposal
