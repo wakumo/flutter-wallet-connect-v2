@@ -71,8 +71,6 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
                 val walletDelegate = object : SignClient.WalletDelegate {
                     override fun onSessionProposal(sessionProposal: Sign.Model.SessionProposal) {
-                        // TODO: it should be have redirect here!
-                        // https://github.com/WalletConnect/WalletConnectKotlinV2/issues/792
                         onEvent(
                             name = "proposal", data = sessionProposal.toFlutterValue()
                         )
@@ -341,6 +339,7 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     result.success(null)
                 }
                 val handleError: (Sign.Model.Error) -> Unit = {
+                    result.success(null)
                     onError("send_request_error", errorMessage = it.throwable.message ?: "")
                 }
                 SignClient.request(requestParams, onError = handleError, onSuccess = handleSuccess)
@@ -403,7 +402,7 @@ fun Sign.Model.SessionProposal.toFlutterValue(): Map<String, Any> {
             "description" to this.description,
             "url" to this.url,
             "icons" to this.icons.map { it.toString() },
-            // TODO: should have redirect field here
+            "redirect" to this.redirect.ifBlank { null }
         ),
         "namespaces" to this.requiredNamespaces.map { (key, value) ->
             key to mapOf(

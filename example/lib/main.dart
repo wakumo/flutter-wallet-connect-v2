@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:bip39/bip39.dart' as bip39;
@@ -691,20 +690,26 @@ extension StringExt on String {
   Future launch({int delayInMillis = 500}) async {
     try {
       await Future.delayed(Duration(milliseconds: delayInMillis));
-      final uri = Uri.parse(this);
-      if (Platform.isAndroid) {
-        final isAbleToLaunch = await canLaunchUrl(uri);
-        if (!isAbleToLaunch) return;
-      }
+      final uri = Uri.parse(contains(':') ? this : '$this:');
       if (startsWith('http')) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-      } else if (contains('://')) {
-        await launchUrl(uri);
+        await _launchUniversalLink(uri);
       } else {
-        await launchUrl(Uri.parse('$this://'));
+        await launchUrl(uri);
+      }
+    } catch (_) {}
+  }
+
+  Future _launchUniversalLink(Uri url) async {
+    try {
+      final bool nativeAppLaunchSucceeded = await launchUrl(
+        url,
+        mode: LaunchMode.externalNonBrowserApplication,
+      );
+      if (!nativeAppLaunchSucceeded) {
+        return await launchUrl(
+          url,
+          mode: LaunchMode.inAppWebView,
+        );
       }
     } catch (_) {}
   }
