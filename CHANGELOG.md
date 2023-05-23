@@ -30,3 +30,7 @@
 
 * Upgrade to the latest SDKs Android Bom 1.9.3
 * Add missing redirect field from session proposal
+
+## 1.0.5
+
+* Upgrade to the latest SDKs Android Bom 1.10.0
