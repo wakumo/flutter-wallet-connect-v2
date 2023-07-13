@@ -49,10 +49,12 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] sessionProposal in
                         self?.onEvent(name: "proposal", data: [
-                            "id": sessionProposal.id,
-                            "proposer": sessionProposal.proposer.toFlutterValue(),
-                            "namespaces": sessionProposal.requiredNamespaces.mapValues { value in value.toFlutterValue()
-                            }
+                            "id": sessionProposal.proposal.id,
+                            "proposer": sessionProposal.proposal.proposer.toFlutterValue(),
+                            "namespaces": sessionProposal.proposal.requiredNamespaces.mapValues { value in value.toFlutterValue()
+                            },
+                            "optionalNamespaces": sessionProposal.proposal.optionalNamespaces?.mapValues { value in value.toFlutterValue()
+                            } as Any
                         ])
                     }.store(in: &publishers)
                 
@@ -87,7 +89,7 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                 Sign.instance.sessionRequestPublisher
                         .receive(on: DispatchQueue.main)
                         .sink { [weak self] request in
-                            self?.onEvent(name: "session_request", data: request.toFlutterValue())
+                            self?.onEvent(name: "session_request", data: request.request.toFlutterValue())
                         }.store(in: &publishers)
             
                 Sign.instance.sessionResponsePublisher
@@ -324,18 +326,7 @@ extension AppMetadata {
 extension ProposalNamespace {
     func toFlutterValue() -> NSDictionary {
         return [
-            "chains": Array(self.chains).map( { String($0) }),
-            "methods": Array(self.methods),
-            "events": Array(self.events),
-            "extensions": self.extensions?.map( { $0.toFlutterValue() }) as Any,
-        ];
-    }
-}
-
-extension ProposalNamespace.Extension {
-    func toFlutterValue() -> NSDictionary {
-        return [
-            "chains": Array(self.chains).map( { String($0) }),
+            "chains": self.chains?.map( { String($0) }) as Any,
             "methods": Array(self.methods),
             "events": Array(self.events)
         ];
@@ -348,17 +339,7 @@ extension SessionNamespace {
             "accounts": Array(self.accounts).map( { String($0) }),
             "methods": Array(self.methods),
             "events": Array(self.events),
-            "extensions": self.extensions?.map( { $0.toFlutterValue() }) as Any,
-        ];
-    }
-}
-
-extension SessionNamespace.Extension {
-    func toFlutterValue() -> NSDictionary {
-        return [
-            "accounts": Array(self.accounts).map( { String($0) }),
-            "methods": Array(self.methods),
-            "events": Array(self.events)
+            "chains": self.chains?.map( { String($0) }) as Any,
         ];
     }
 }

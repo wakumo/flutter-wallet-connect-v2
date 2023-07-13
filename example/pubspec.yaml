@@ -35,6 +35,7 @@ dependencies:
   eth_sig_util: ^0.0.9
   shared_preferences: ^2.0.15
   url_launcher: ^6.1.10
+  qr_flutter: ^4.0.0
 
 dev_dependencies:
   flutter_test:

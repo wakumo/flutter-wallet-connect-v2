@@ -70,13 +70,19 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }
 
                 val walletDelegate = object : SignClient.WalletDelegate {
-                    override fun onSessionProposal(sessionProposal: Sign.Model.SessionProposal) {
+                    override fun onSessionProposal(
+                        sessionProposal: Sign.Model.SessionProposal,
+                        verifyContext: Sign.Model.VerifyContext
+                    ) {
                         onEvent(
                             name = "proposal", data = sessionProposal.toFlutterValue()
                         )
                     }
 
-                    override fun onSessionRequest(sessionRequest: Sign.Model.SessionRequest) {
+                    override fun onSessionRequest(
+                        sessionRequest: Sign.Model.SessionRequest,
+                        verifyContext: Sign.Model.VerifyContext
+                    ) {
                         onEvent(
                             name = "session_request", data = sessionRequest.toFlutterValue()
                         )
@@ -405,6 +411,13 @@ fun Sign.Model.SessionProposal.toFlutterValue(): Map<String, Any> {
             "redirect" to this.redirect.ifBlank { null }
         ),
         "namespaces" to this.requiredNamespaces.map { (key, value) ->
+            key to mapOf(
+                "chains" to value.chains,
+                "methods" to value.methods,
+                "events" to value.events
+            )
+        }.toMap(),
+        "optionalNamespaces" to this.optionalNamespaces.map { (key, value) ->
             key to mapOf(
                 "chains" to value.chains,
                 "methods" to value.methods,

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' hide Request;
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wallet_connect_v2/wallet_connect_v2.dart';
@@ -92,11 +93,10 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       });
       if (proposal.namespaces.length != 1 ||
           !proposal.namespaces.containsKey('eip155') ||
-          int.parse(
-                  proposal.namespaces['eip155']!.chains.first.split(':')[1]) !=
-              5) {
+          proposal.namespaces['eip155']?.chains == null) {
         _showDialog(
-            child: const Text('Please choose GOERLI testnet only to do test!'));
+            child:
+                const Text('Please choose Ethereum networks only to do test!'));
         _walletConnectV2Plugin.rejectSession(proposalId: proposal.id);
         return;
       }
@@ -127,17 +127,37 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       ));
       if (isApprove == true) {
         try {
-          _walletConnectV2Plugin.approveSession(
-              approval: SessionApproval(
-                  id: proposal.id,
-                  namespaces: proposal.namespaces.map((key, value) => MapEntry(
-                      key,
-                      SessionNamespace(
-                          accounts:
-                              value.chains.map((e) => '$e:$_address').toList(),
-                          methods: value.methods,
-                          events: value.events,
-                          extensions: value.extensions)))));
+          final requiredMethods = proposal.namespaces['eip155']!.methods;
+          final requiredEvents = proposal.namespaces['eip155']!.events;
+
+          final optionalMethods =
+              proposal.optionalNamespaces?['eip155']?.methods;
+          final optionalEvents = proposal.optionalNamespaces?['eip155']?.events;
+
+          final methods = optionalMethods != null &&
+                  optionalMethods.length > requiredMethods.length
+              ? optionalMethods
+              : requiredMethods;
+          final events = optionalEvents != null &&
+                  optionalEvents.length > requiredEvents.length
+              ? optionalEvents
+              : requiredEvents;
+
+          final List<String> chainList = [];
+          chainList.addAll(proposal.namespaces['eip155']!.chains!);
+          chainList.addAll(proposal.optionalNamespaces!['eip155']!.chains!);
+          final chainIDs = chainList.toSet().toList();
+
+          final approval = SessionApproval(id: proposal.id, namespaces: {
+            'eip155': SessionNamespace(
+                accounts: chainIDs.map((e) => '$e:$_address').toList(),
+                methods: methods,
+                events: events)
+          });
+
+          print(approval.toJson());
+
+          _walletConnectV2Plugin.approveSession(approval: approval);
         } catch (e) {
           _showDialog(child: Text('Approve session error: ${e.toString()}'));
         }
@@ -321,6 +341,15 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              QrImage(
+                                padding: const EdgeInsets.all(16),
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                data: _uriDisplay!,
+                                version: QrVersions.auto,
+                                size: MediaQuery.of(context).size.height / 3,
+                              ),
+                              const SizedBox(height: 16),
                               Text('URI: $_uriDisplay'),
                               const SizedBox(height: 16),
                               TextButton(
@@ -340,7 +369,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ),
                         )
                       : Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.only(
+                              left: 16, right: 16, top: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -380,11 +410,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                 onPressed: () =>
                                                     onSendPersonalMessageTest()),
                                             TextButton(
-                                                child: const Text(
-                                                    'eth_signTransaction'),
-                                                onPressed: () =>
-                                                    onSendTransactionTest()),
-                                            TextButton(
                                                 child: const Text('Disconnect'),
                                                 onPressed: () async {
                                                   await _walletConnectV2Plugin
@@ -402,68 +427,14 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                   color: Colors.grey,
                                   margin:
                                       const EdgeInsets.symmetric(vertical: 16)),
-                              const Text('Sessions:'),
-                              Expanded(
-                                  child: _sessions.isEmpty
-                                      ? const Center(
-                                          child: Text(
-                                              'No sessions\n\nPair wallet connect uri and approve to have session',
-                                              textAlign: TextAlign.center))
-                                      : ListView.separated(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 16),
-                                          itemBuilder: (_, index) {
-                                            final session = _sessions[index];
-                                            return Container(
-                                              padding: const EdgeInsets.all(16),
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  border: Border.all(
-                                                      width: 1,
-                                                      color: Colors.grey)),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(session
-                                                      .toJson()
-                                                      .toString()),
-                                                  TextButton(
-                                                      onPressed: () async {
-                                                        await _walletConnectV2Plugin
-                                                            .disconnectSession(
-                                                                topic: session
-                                                                    .topic);
-                                                        _refreshSessions();
-                                                      },
-                                                      child: const Text(
-                                                          'Disconnect'))
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                          separatorBuilder: (_, __) =>
-                                              const SizedBox(height: 16),
-                                          itemCount: _sessions.length)),
-                              Container(
-                                  width: double.infinity,
-                                  height: 1,
-                                  color: Colors.grey,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 16)),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Account:'),
-                                  const SizedBox(height: 8),
-                                  Text('Private Key: $_privateKey'),
-                                  const SizedBox(height: 8),
+                                  // const Text('Account:'),
+                                  // const SizedBox(height: 8),
+                                  // Text('Private Key: $_privateKey'),
+                                  // const SizedBox(height: 8),
                                   Text('Address: $_address'),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                      'PLEASE CHOOSE GOERLI NETWORK ONLY TO PAIR!',
-                                      style:
-                                          TextStyle(color: Colors.redAccent)),
                                   const SizedBox(height: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -486,7 +457,6 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                 "Enter wallet connect URI",
                                             counterText: '')),
                                   ),
-                                  const SizedBox(height: 8),
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -531,6 +501,54 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                   )
                                 ],
                               ),
+                              Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  color: Colors.grey,
+                                  margin: const EdgeInsets.only(bottom: 16)),
+                              const Text('Sessions:'),
+                              Expanded(
+                                  child: _sessions.isEmpty
+                                      ? const Center(
+                                          child: Text(
+                                              'No sessions\n\nPair wallet connect uri and approve to have session',
+                                              textAlign: TextAlign.center))
+                                      : ListView.separated(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16),
+                                          itemBuilder: (_, index) {
+                                            final session = _sessions[index];
+                                            return Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                      width: 1,
+                                                      color: Colors.grey)),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(session
+                                                      .toJson()
+                                                      .toString()),
+                                                  TextButton(
+                                                      onPressed: () async {
+                                                        await _walletConnectV2Plugin
+                                                            .disconnectSession(
+                                                                topic: session
+                                                                    .topic);
+                                                        _refreshSessions();
+                                                      },
+                                                      child: const Text(
+                                                          'Disconnect'))
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 16),
+                                          itemCount: _sessions.length))
                             ],
                           ),
                         )

@@ -14,11 +14,27 @@ SessionProposal _$SessionProposalFromJson(Map<String, dynamic> json) =>
         (k, e) =>
             MapEntry(k, ProposalNamespace.fromJson(e as Map<String, dynamic>)),
       ),
+      optionalNamespaces:
+          (json['optionalNamespaces'] as Map<String, dynamic>?)?.map(
+        (k, e) =>
+            MapEntry(k, ProposalNamespace.fromJson(e as Map<String, dynamic>)),
+      ),
     );
 
-Map<String, dynamic> _$SessionProposalToJson(SessionProposal instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'proposer': instance.proposer.toJson(),
-      'namespaces': instance.namespaces.map((k, e) => MapEntry(k, e.toJson())),
-    };
+Map<String, dynamic> _$SessionProposalToJson(SessionProposal instance) {
+  final val = <String, dynamic>{
+    'id': instance.id,
+    'proposer': instance.proposer.toJson(),
+    'namespaces': instance.namespaces.map((k, e) => MapEntry(k, e.toJson())),
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('optionalNamespaces',
+      instance.optionalNamespaces?.map((k, e) => MapEntry(k, e.toJson())));
+  return val;
+}
