@@ -34,3 +34,8 @@
 ## 1.0.5
 
 * Upgrade to the latest SDKs Android Bom 1.10.0
+
+## 1.0.6
+
+* Upgrade to the latest SDKs Android Bom 1.13.1, iOS 1.6.12
+* Support optional namespaces

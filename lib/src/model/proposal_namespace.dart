@@ -1,21 +1,15 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'extension.dart';
-
 part 'proposal_namespace.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class ProposalNamespace {
-  final List<String> chains;
+  @JsonKey(includeIfNull: false)
+  final List<String>? chains;
   final List<String> methods;
   final List<String> events;
-  final List<Extension>? extensions;
 
-  ProposalNamespace(
-      {required this.chains,
-      required this.methods,
-      required this.events,
-      this.extensions});
+  ProposalNamespace({this.chains, required this.methods, required this.events});
 
   factory ProposalNamespace.fromJson(Map<String, dynamic> json) =>
       _$ProposalNamespaceFromJson(json);
