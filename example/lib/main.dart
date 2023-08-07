@@ -127,21 +127,15 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       ));
       if (isApprove == true) {
         try {
-          final requiredMethods = proposal.namespaces['eip155']!.methods;
-          final requiredEvents = proposal.namespaces['eip155']!.events;
+          final requiredMethods =
+              proposal.namespaces['eip155']?.methods ?? <String>[];
+          final requiredEvents =
+              proposal.namespaces['eip155']?.events ?? <String>[];
 
           final optionalMethods =
-              proposal.optionalNamespaces?['eip155']?.methods;
-          final optionalEvents = proposal.optionalNamespaces?['eip155']?.events;
-
-          final methods = optionalMethods != null &&
-                  optionalMethods.length > requiredMethods.length
-              ? optionalMethods
-              : requiredMethods;
-          final events = optionalEvents != null &&
-                  optionalEvents.length > requiredEvents.length
-              ? optionalEvents
-              : requiredEvents;
+              proposal.optionalNamespaces?['eip155']?.methods ?? <String>[];
+          final optionalEvents =
+              proposal.optionalNamespaces?['eip155']?.events ?? <String>[];
 
           final List<String> chainList = [];
           chainList.addAll(proposal.namespaces['eip155']!.chains!);
@@ -151,8 +145,12 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           final approval = SessionApproval(id: proposal.id, namespaces: {
             'eip155': SessionNamespace(
                 accounts: chainIDs.map((e) => '$e:$_address').toList(),
-                methods: methods,
-                events: events)
+                methods: requiredMethods.isNotEmpty
+                    ? <String>{...requiredMethods, ...optionalMethods}.toList()
+                    : [],
+                events: requiredEvents.isNotEmpty
+                    ? <String>{...requiredEvents, ...optionalEvents}.toList()
+                    : [])
           });
 
           print(approval.toJson());
@@ -309,6 +307,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
             }
             break;
           default:
+            _walletConnectV2Plugin.rejectRequest(
+                topic: request.topic, requestId: request.id);
             _showDialog(child: Text('Unhandled method ${request.method}'));
             break;
         }

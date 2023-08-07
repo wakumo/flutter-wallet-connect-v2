@@ -8,44 +8,44 @@ PODS:
   - wallet_connect_v2 (0.0.1):
     - Flutter
     - Starscream (= 3.1.1)
-    - WalletConnectSwiftV2 (= 1.6.12)
-  - WalletConnectSwiftV2 (1.6.12):
-    - WalletConnectSwiftV2/WalletConnect (= 1.6.12)
-  - WalletConnectSwiftV2/Commons (1.6.12)
-  - WalletConnectSwiftV2/HTTPClient (1.6.12)
-  - WalletConnectSwiftV2/JSONRPC (1.6.12):
+    - WalletConnectSwiftV2 (= 1.6.15)
+  - WalletConnectSwiftV2 (1.6.15):
+    - WalletConnectSwiftV2/WalletConnect (= 1.6.15)
+  - WalletConnectSwiftV2/Commons (1.6.15)
+  - WalletConnectSwiftV2/HTTPClient (1.6.15)
+  - WalletConnectSwiftV2/JSONRPC (1.6.15):
     - WalletConnectSwiftV2/Commons
-  - WalletConnectSwiftV2/WalletConnect (1.6.12):
+  - WalletConnectSwiftV2/WalletConnect (1.6.15):
     - WalletConnectSwiftV2/WalletConnectAuth
     - WalletConnectSwiftV2/WalletConnectEcho
     - WalletConnectSwiftV2/WalletConnectSign
     - WalletConnectSwiftV2/WalletConnectVerify
-  - WalletConnectSwiftV2/WalletConnectAuth (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectAuth (1.6.15):
     - WalletConnectSwiftV2/WalletConnectPairing
     - WalletConnectSwiftV2/WalletConnectSigner
     - WalletConnectSwiftV2/WalletConnectVerify
-  - WalletConnectSwiftV2/WalletConnectEcho (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectEcho (1.6.15):
     - WalletConnectSwiftV2/WalletConnectJWT
     - WalletConnectSwiftV2/WalletConnectNetworking
-  - WalletConnectSwiftV2/WalletConnectJWT (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectJWT (1.6.15):
     - WalletConnectSwiftV2/WalletConnectKMS
-  - WalletConnectSwiftV2/WalletConnectKMS (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectKMS (1.6.15):
     - WalletConnectSwiftV2/WalletConnectUtils
-  - WalletConnectSwiftV2/WalletConnectNetworking (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectNetworking (1.6.15):
     - WalletConnectSwiftV2/HTTPClient
     - WalletConnectSwiftV2/WalletConnectRelay
-  - WalletConnectSwiftV2/WalletConnectPairing (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectPairing (1.6.15):
     - WalletConnectSwiftV2/WalletConnectNetworking
-  - WalletConnectSwiftV2/WalletConnectRelay (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectRelay (1.6.15):
     - WalletConnectSwiftV2/WalletConnectJWT
-  - WalletConnectSwiftV2/WalletConnectSign (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectSign (1.6.15):
     - WalletConnectSwiftV2/WalletConnectPairing
     - WalletConnectSwiftV2/WalletConnectVerify
-  - WalletConnectSwiftV2/WalletConnectSigner (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectSigner (1.6.15):
     - WalletConnectSwiftV2/WalletConnectNetworking
-  - WalletConnectSwiftV2/WalletConnectUtils (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectUtils (1.6.15):
     - WalletConnectSwiftV2/JSONRPC
-  - WalletConnectSwiftV2/WalletConnectVerify (1.6.12):
+  - WalletConnectSwiftV2/WalletConnectVerify (1.6.15):
     - WalletConnectSwiftV2/WalletConnectNetworking
     - WalletConnectSwiftV2/WalletConnectUtils
 
@@ -75,8 +75,8 @@ SPEC CHECKSUMS:
   shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
-  wallet_connect_v2: ad634eb6588ce21fc2b51edb052bcd46dcd45601
-  WalletConnectSwiftV2: 6b96868cd4b46bfb2660b523e8a1441c0d9f3a5b
+  wallet_connect_v2: 78e20efdb3991c6658034d1b41c397fa65377555
+  WalletConnectSwiftV2: 1fe475684ebc12eff1c82dfec06c724abd6215e8
 
 PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
 
