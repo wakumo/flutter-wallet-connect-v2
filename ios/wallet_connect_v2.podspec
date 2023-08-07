@@ -15,7 +15,7 @@ Wallet Connect V2 for Flutter
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'WalletConnectSwiftV2', '1.6.12'
+  s.dependency 'WalletConnectSwiftV2', '1.6.15'
   s.dependency 'Starscream', '3.1.1'
   s.platform = :ios, '13.0'
 
