@@ -98,6 +98,14 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                         }
                     }
 
+                    override fun onSessionExtend(session: Sign.Model.Session) {
+                        onEvent(
+                            name = "session_update", data = mapOf(
+                                "topic" to session.topic
+                            )
+                        )
+                    }
+
                     override fun onSessionSettleResponse(settleSessionResponse: Sign.Model.SettledSessionResponse) {
                         if (settleSessionResponse is Sign.Model.SettledSessionResponse.Result) {
                             val session = settleSessionResponse.session
