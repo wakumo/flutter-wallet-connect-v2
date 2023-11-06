@@ -43,3 +43,8 @@
 ## 1.0.7
 
 * Upgrade to the latest SDKs Android Bom 1.15.0, iOS 1.6.15
+
+## 1.0.8
+
+* Upgrade to the latest SDK Android Bom 1.19.1
+* Wrap session extend callback to fire session update event to Flutter
