@@ -9,7 +9,7 @@ part 'session_proposal.g.dart';
 class SessionProposal {
   final String id;
   final AppMetadata proposer;
-  final Map<String, ProposalNamespace> namespaces;
+  final Map<String, ProposalNamespace>? namespaces;
   @JsonKey(includeIfNull: false)
   final Map<String, ProposalNamespace>? optionalNamespaces;
 
