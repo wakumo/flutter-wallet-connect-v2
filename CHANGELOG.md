@@ -48,3 +48,7 @@
 
 * Upgrade to the latest SDK Android Bom 1.19.1
 * Wrap session extend callback to fire session update event to Flutter
+
+## 1.0.9
+
+* Declare namespaces nullable

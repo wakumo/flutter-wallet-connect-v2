@@ -91,9 +91,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       setState(() {
         _isLoading = false;
       });
-      if (proposal.namespaces.length != 1 ||
-          !proposal.namespaces.containsKey('eip155') ||
-          proposal.namespaces['eip155']?.chains == null) {
+      if (proposal.namespaces?.length != 1 ||
+          proposal.namespaces?.containsKey('eip155') != true ||
+          proposal.namespaces?['eip155']?.chains == null) {
         _showDialog(
             child:
                 const Text('Please choose Ethereum networks only to do test!'));
@@ -128,9 +128,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
       if (isApprove == true) {
         try {
           final requiredMethods =
-              proposal.namespaces['eip155']?.methods ?? <String>[];
+              proposal.namespaces?['eip155']?.methods ?? <String>[];
           final requiredEvents =
-              proposal.namespaces['eip155']?.events ?? <String>[];
+              proposal.namespaces?['eip155']?.events ?? <String>[];
 
           final optionalMethods =
               proposal.optionalNamespaces?['eip155']?.methods ?? <String>[];
@@ -138,8 +138,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
               proposal.optionalNamespaces?['eip155']?.events ?? <String>[];
 
           final List<String> chainList = [];
-          chainList.addAll(proposal.namespaces['eip155']!.chains!);
-          chainList.addAll(proposal.optionalNamespaces!['eip155']!.chains!);
+          chainList.addAll(proposal.namespaces?['eip155']?.chains ?? []);
+          chainList.addAll(proposal.optionalNamespaces?['eip155']?.chains ?? []);
           final chainIDs = chainList.toSet().toList();
 
           final approval = SessionApproval(id: proposal.id, namespaces: {
@@ -355,7 +355,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                               TextButton(
                                   onPressed: () {
                                     Clipboard.setData(
-                                        ClipboardData(text: _uriDisplay));
+                                        ClipboardData(text: _uriDisplay ?? ''));
                                   },
                                   child: const Text('Copy')),
                               TextButton(
