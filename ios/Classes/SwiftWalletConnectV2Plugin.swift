@@ -33,7 +33,7 @@ public class SwiftWalletConnectV2Plugin: NSObject, FlutterPlugin, FlutterStreamH
                 }
                 let metadata: AppMetadata = try! JSONDecoder().decode(AppMetadata.self, from: JSONSerialization.data(withJSONObject: appMetadata))
                 
-                Networking.configure(projectId: projectId, socketFactory: SocketFactory(), socketConnectionType: .manual)
+                Networking.configure(relayHost: "relay.walletconnect.org", projectId: projectId, socketFactory: SocketFactory(), socketConnectionType: .manual)
             
                 Pair.configure(metadata: metadata)
                 

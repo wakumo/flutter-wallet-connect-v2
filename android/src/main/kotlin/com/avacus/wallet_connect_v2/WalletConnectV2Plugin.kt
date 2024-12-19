@@ -44,7 +44,7 @@ class WalletConnectV2Plugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             "init" -> {
                 val arguments = call.arguments<Map<String, Any>>()
                 val projectId = arguments?.get("projectId")
-                val serverUrl = "wss://relay.walletconnect.com?projectId=$projectId"
+                val serverUrl = "wss://relay.walletconnect.org?projectId=$projectId"
                 val connectionType = ConnectionType.MANUAL
 
                 val gson = Gson()
